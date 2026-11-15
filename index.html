@@ -1,0 +1,2462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MuseAI — AI Song & Music Maker | Studio-Quality Audio</title>
+    <link rel="icon" type="image/png" href="./assets/icon/ic_app.png">
+    <meta name="description" content="MuseAI — Next-generation AI music creation studio. Transform text descriptions or photos into studio-grade songs with vocals, beats, and instruments in 15 seconds.">
+    <meta name="keywords" content="MuseAI, AI Music Generator, AI Song Maker, Lyria Engine, Text to Music, Photo to Music, Stem Separation, KasumiLabs">
+    
+    <!-- Open Graph / Meta -->
+    <meta property="og:title" content="MuseAI — AI Song & Music Maker">
+    <meta property="og:description" content="Create full songs, original lyrics, and master-grade beats in 15 seconds with advanced AI.">
+    <meta property="og:image" content="./feature_graphic_1024x500/feature_graphic_1024x500.jpg">
+    <meta property="og:type" content="website">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-void: #08080A;
+            --bg-surface: #0E0E13;
+            --bg-surface-elevated: #14141B;
+            --bg-card: rgba(18, 18, 25, 0.72);
+            --bg-card-hover: rgba(26, 26, 36, 0.85);
+            
+            --coral: #EE6D66;
+            --coral-deep: #D45550;
+            --coral-glow: rgba(238, 109, 102, 0.28);
+            --mint: #66EECE;
+            --mint-glow: rgba(102, 238, 206, 0.25);
+            --indigo-accent: #818CF8;
+
+            --text-hi: #FFFFFF;
+            --text-mid: #E2E2EA;
+            --text-lo: #9E9EAA;
+            --text-muted: #646473;
+
+            --border-hairline: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(238, 109, 102, 0.22);
+            --border-active: rgba(102, 238, 206, 0.35);
+
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+            --radius-pill: 9999px;
+
+            --font-display: 'Outfit', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --container-max: 1240px;
+            --transition-smooth: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            background-color: var(--bg-void);
+            color: var(--text-mid);
+            font-family: var(--font-body);
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+
+        body {
+            background-color: var(--bg-void);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient Glow Backdrop */
+        .ambient-glow-wrap {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(140px);
+            opacity: 0.28;
+            transform: translate3d(0, 0, 0);
+        }
+        .glow-orb-1 {
+            top: -150px;
+            left: -100px;
+            width: 650px;
+            height: 650px;
+            background: radial-gradient(circle, var(--coral) 0%, transparent 70%);
+        }
+        .glow-orb-2 {
+            top: 30%;
+            right: -150px;
+            width: 580px;
+            height: 580px;
+            background: radial-gradient(circle, var(--mint) 0%, transparent 70%);
+            opacity: 0.18;
+        }
+        .glow-orb-3 {
+            bottom: 5%;
+            left: 20%;
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, #3b2063 0%, transparent 70%);
+            opacity: 0.22;
+        }
+
+        /* Subtle Audio Grid Overlay */
+        .grid-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Global Layout */
+        .container {
+            max-width: var(--container-max);
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 2;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font-family: inherit;
+            border: none;
+            outline: none;
+            background: none;
+            cursor: pointer;
+        }
+
+        /* Typography Utilities */
+        .font-display { font-family: var(--font-display); }
+        .font-mono { font-family: var(--font-mono); }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #FFFFFF 20%, var(--coral) 65%, var(--mint) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        .coral-text { color: var(--coral); }
+        .mint-text { color: var(--mint); }
+
+        /* Navigation */
+        .site-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 76px;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            background: rgba(8, 8, 10, 0.75);
+            border-bottom: 1px solid var(--border-hairline);
+            transition: var(--transition-smooth);
+        }
+        .site-header.scrolled {
+            background: rgba(8, 8, 10, 0.92);
+            border-bottom-color: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 76px;
+        }
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+        .brand-logo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 16px var(--coral-glow);
+            transition: var(--transition-smooth);
+        }
+        .brand-logo:hover img {
+            transform: scale(1.05) rotate(-2deg);
+        }
+        .brand-name {
+            font-family: var(--font-display);
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-hi);
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .brand-badge {
+            font-size: 10px;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            letter-spacing: 0.1em;
+            background: rgba(238, 109, 102, 0.14);
+            color: var(--coral);
+            padding: 2px 7px;
+            border-radius: var(--radius-pill);
+            border: 1px solid rgba(238, 109, 102, 0.28);
+        }
+
+        .nav-center {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+        }
+        .nav-link {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-lo);
+            transition: var(--transition-smooth);
+            position: relative;
+            padding: 6px 0;
+        }
+        .nav-link:hover {
+            color: var(--text-hi);
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--coral), var(--mint));
+            transition: width 0.2s ease;
+            border-radius: 2px;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* Language Toggle */
+        .lang-switch {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-pill);
+            padding: 3px;
+        }
+        .lang-btn {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-lo);
+            padding: 4px 10px;
+            border-radius: var(--radius-pill);
+            transition: var(--transition-smooth);
+        }
+        .lang-btn.active {
+            background: var(--coral);
+            color: #FFFFFF;
+            box-shadow: 0 2px 8px var(--coral-glow);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: linear-gradient(135deg, var(--coral) 0%, var(--coral-deep) 100%);
+            color: #FFFFFF;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 12px 24px;
+            border-radius: var(--radius-pill);
+            box-shadow: 0 4px 20px var(--coral-glow);
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(238, 109, 102, 0.42);
+        }
+        .btn-primary:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-hi);
+            font-size: 14px;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--border-hairline);
+            backdrop-filter: blur(10px);
+            transition: var(--transition-smooth);
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        .btn-secondary:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* Engine Status Pill */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(102, 238, 206, 0.08);
+            border: 1px solid rgba(102, 238, 206, 0.25);
+            padding: 6px 14px;
+            border-radius: var(--radius-pill);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--mint);
+            font-family: var(--font-mono);
+            letter-spacing: 0.03em;
+        }
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--mint);
+            box-shadow: 0 0 10px var(--mint);
+            animation: pulse-ring 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        }
+        @keyframes pulse-ring {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        /* Section Layouts */
+        section {
+            padding: 96px 0;
+            position: relative;
+        }
+
+        /* HERO SECTION */
+        .hero-section {
+            padding-top: 150px;
+            padding-bottom: 90px;
+            min-height: 92vh;
+            display: flex;
+            align-items: center;
+        }
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 48px;
+            align-items: center;
+        }
+
+        .hero-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .hero-title {
+            font-family: var(--font-display);
+            font-size: 54px;
+            line-height: 1.08;
+            font-weight: 900;
+            color: var(--text-hi);
+            letter-spacing: -0.03em;
+        }
+        .hero-subtitle {
+            font-size: 17px;
+            line-height: 1.6;
+            color: var(--text-lo);
+            max-width: 540px;
+        }
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* Trust Metrics Strip */
+        .hero-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding-top: 28px;
+            margin-top: 14px;
+            border-top: 1px solid var(--border-hairline);
+        }
+        .metric-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .metric-number {
+            font-family: var(--font-display);
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-hi);
+            letter-spacing: -0.02em;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-lo);
+            font-weight: 500;
+        }
+
+        /* Interactive Studio Console (Right Hero Card) */
+        .hero-console {
+            background: var(--bg-card);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(238, 109, 102, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.3s ease;
+        }
+        .hero-console:hover {
+            border-color: rgba(238, 109, 102, 0.28);
+        }
+        .console-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-hairline);
+        }
+        .console-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-family: var(--font-mono);
+            color: var(--mint);
+        }
+        .console-tab-row {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+        .genre-pill {
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: var(--radius-pill);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-lo);
+            border: 1px solid var(--border-hairline);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            white-space: nowrap;
+        }
+        .genre-pill.active {
+            background: rgba(238, 109, 102, 0.16);
+            color: var(--coral);
+            border-color: var(--coral);
+        }
+
+        /* Waveform Box */
+        .waveform-box {
+            background: var(--bg-surface);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+        }
+        .track-meta-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .track-title {
+            font-family: var(--font-display);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-hi);
+        }
+        .track-stats {
+            display: flex;
+            gap: 12px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-lo);
+        }
+        .waveform-canvas {
+            width: 100%;
+            height: 64px;
+            border-radius: 6px;
+            display: block;
+        }
+
+        /* Live Prompt Box */
+        .console-prompt-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed rgba(255, 255, 255, 0.12);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            font-size: 12.5px;
+            line-height: 1.5;
+            color: var(--text-lo);
+        }
+        .prompt-tag {
+            font-size: 10px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--mint);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        /* Playback Controls */
+        .console-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .playback-progress-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-pill);
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 32%;
+            background: linear-gradient(90deg, var(--coral), var(--mint));
+            border-radius: var(--radius-pill);
+            transition: width 0.1s linear;
+        }
+        .time-labels {
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .play-btn-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--coral), var(--coral-deep));
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 18px var(--coral-glow);
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .play-btn-circle:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 24px rgba(238, 109, 102, 0.5);
+        }
+        .play-btn-circle svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+        }
+
+        /* SECTION HEADER COMPONENT */
+        .section-header {
+            max-width: 680px;
+            margin-bottom: 56px;
+        }
+        .section-header.center {
+            text-align: center;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .section-eyebrow {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--coral);
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+        .section-title {
+            font-family: var(--font-display);
+            font-size: 38px;
+            line-height: 1.15;
+            font-weight: 800;
+            color: var(--text-hi);
+            letter-spacing: -0.02em;
+            margin-bottom: 14px;
+        }
+        .section-desc {
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text-lo);
+        }
+
+        /* BENTO GRID (Core Features) */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+        }
+        .bento-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-xl);
+            padding: 32px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+        .bento-card:hover {
+            border-color: rgba(255, 255, 255, 0.18);
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .bento-card-8 { grid-column: span 8; }
+        .bento-card-4 { grid-column: span 4; }
+        .bento-card-6 { grid-column: span 6; }
+        .bento-card-12 { grid-column: span 12; }
+
+        .bento-tag {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: var(--radius-pill);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--mint);
+            align-self: flex-start;
+            margin-bottom: 18px;
+        }
+        .bento-card-title {
+            font-family: var(--font-display);
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-hi);
+            margin-bottom: 10px;
+            letter-spacing: -0.01em;
+        }
+        .bento-card-desc {
+            font-size: 14.5px;
+            line-height: 1.6;
+            color: var(--text-lo);
+            margin-bottom: 24px;
+        }
+
+        /* Photo-to-Music Visual Showcase */
+        .photo-music-demo {
+            display: grid;
+            grid-template-columns: 1fr 40px 1fr;
+            align-items: center;
+            gap: 12px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-md);
+            padding: 16px;
+        }
+        .photo-preview-tile {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 110px;
+        }
+        .photo-preview-tile img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .photo-tag-overlay {
+            position: absolute;
+            bottom: 6px;
+            left: 6px;
+            background: rgba(0, 0, 0, 0.7);
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #FFFFFF;
+            font-family: var(--font-mono);
+        }
+        .converter-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--coral);
+        }
+        .music-result-tile {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 6px;
+            height: 110px;
+        }
+        .result-track-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-hi);
+        }
+        .result-badges {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .badge-chip {
+            font-size: 10px;
+            font-family: var(--font-mono);
+            background: rgba(102, 238, 206, 0.12);
+            color: var(--mint);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Stem Separation Interactive Visualizer */
+        .stem-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .stem-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-sm);
+            transition: var(--transition-smooth);
+        }
+        .stem-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(238, 109, 102, 0.3);
+        }
+        .stem-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .stem-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: rgba(238, 109, 102, 0.15);
+            color: var(--coral);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+        }
+        .stem-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-hi);
+        }
+        .stem-vol-bar {
+            width: 120px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            position: relative;
+        }
+        .stem-vol-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: var(--mint);
+        }
+        .stem-mute-btn {
+            font-size: 11px;
+            font-family: var(--font-mono);
+            color: var(--text-lo);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .stem-mute-btn.active {
+            color: var(--coral);
+            background: rgba(238, 109, 102, 0.15);
+        }
+
+        /* 3-STEP PROCESS */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+            position: relative;
+        }
+        .step-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-xl);
+            padding: 32px 28px;
+            position: relative;
+            transition: var(--transition-smooth);
+        }
+        .step-card:hover {
+            border-color: rgba(102, 238, 206, 0.3);
+            transform: translateY(-4px);
+        }
+        .step-num {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--coral);
+            background: rgba(238, 109, 102, 0.12);
+            border: 1px solid rgba(238, 109, 102, 0.25);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .step-title {
+            font-family: var(--font-display);
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-hi);
+            margin-bottom: 10px;
+        }
+        .step-desc {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-lo);
+        }
+
+        /* APP SCREENS GALLERY */
+        .screens-gallery-wrap {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 20px 0 32px 0;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+        }
+        .screen-device-mock {
+            flex: 0 0 260px;
+            background: #0E0E14;
+            border-radius: 28px;
+            padding: 8px;
+            border: 3px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+            transition: var(--transition-smooth);
+            position: relative;
+        }
+        .screen-device-mock:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: var(--coral);
+            box-shadow: 0 20px 48px rgba(238, 109, 102, 0.25);
+        }
+        .screen-device-mock img {
+            width: 100%;
+            height: auto;
+            border-radius: 20px;
+            display: block;
+        }
+        .screen-caption {
+            text-align: center;
+            padding: 12px 6px 4px 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-mid);
+        }
+
+        /* COMPARISON TABLE */
+        .comparison-table-wrap {
+            background: var(--bg-card);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+        }
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        .compare-table th, .compare-table td {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-hairline);
+            font-size: 14.5px;
+        }
+        .compare-table th {
+            background: rgba(255, 255, 255, 0.02);
+            font-family: var(--font-display);
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-hi);
+        }
+        .compare-table th.highlight-col, .compare-table td.highlight-col {
+            background: rgba(238, 109, 102, 0.05);
+            color: var(--text-hi);
+            font-weight: 600;
+        }
+        .compare-table th.highlight-col {
+            color: var(--coral);
+            border-top: 2px solid var(--coral);
+        }
+        .check-icon {
+            color: var(--mint);
+            font-weight: 800;
+            font-size: 16px;
+        }
+        .cross-icon {
+            color: #646473;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        /* PRICING & TIERS */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+            align-items: stretch;
+        }
+        .pricing-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-xl);
+            padding: 36px 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: var(--transition-smooth);
+            position: relative;
+        }
+        .pricing-card.featured {
+            border-color: var(--coral);
+            background: linear-gradient(180deg, rgba(238, 109, 102, 0.08) 0%, rgba(18, 18, 25, 0.85) 100%);
+            box-shadow: 0 20px 50px rgba(238, 109, 102, 0.15);
+            transform: scale(1.03);
+        }
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--coral), var(--coral-deep));
+            color: #FFFFFF;
+            font-size: 11px;
+            font-weight: 800;
+            font-family: var(--font-mono);
+            padding: 4px 14px;
+            border-radius: var(--radius-pill);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .plan-name {
+            font-family: var(--font-display);
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-hi);
+            margin-bottom: 6px;
+        }
+        .plan-price-wrap {
+            margin: 20px 0;
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+        .plan-price {
+            font-family: var(--font-display);
+            font-size: 40px;
+            font-weight: 800;
+            color: var(--text-hi);
+            letter-spacing: -0.02em;
+        }
+        .plan-period {
+            font-size: 14px;
+            color: var(--text-lo);
+        }
+        .plan-features {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 32px;
+        }
+        .plan-features li {
+            font-size: 14px;
+            color: var(--text-mid);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .plan-features li svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+            fill: var(--mint);
+        }
+
+        /* FAQ ACCORDION */
+        .faq-wrap {
+            max-width: 820px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .faq-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+        .faq-item.active {
+            border-color: rgba(238, 109, 102, 0.35);
+            background: rgba(26, 26, 36, 0.7);
+        }
+        .faq-question {
+            width: 100%;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: var(--font-display);
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text-hi);
+            text-align: left;
+            cursor: pointer;
+        }
+        .faq-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--coral);
+            transition: transform 0.25s ease;
+        }
+        .faq-item.active .faq-icon {
+            transform: rotate(45deg);
+        }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s ease;
+            padding: 0 24px;
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-lo);
+        }
+        .faq-item.active .faq-answer {
+            max-height: 220px;
+            padding-bottom: 20px;
+        }
+
+        /* FINAL CTA SECTION */
+        .cta-banner {
+            background: linear-gradient(135deg, rgba(238, 109, 102, 0.12) 0%, rgba(102, 238, 206, 0.08) 50%, rgba(14, 14, 19, 0.95) 100%);
+            border: 1px solid rgba(238, 109, 102, 0.3);
+            border-radius: var(--radius-xl);
+            padding: 64px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        .cta-banner-content {
+            max-width: 640px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        .cta-banner-title {
+            font-family: var(--font-display);
+            font-size: 42px;
+            font-weight: 900;
+            color: var(--text-hi);
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+        }
+        .cta-banner-desc {
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text-lo);
+            margin-bottom: 32px;
+        }
+        .cta-button-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        /* FOOTER */
+        .site-footer {
+            border-top: 1px solid var(--border-hairline);
+            padding: 60px 0 36px 0;
+            background: #060608;
+            font-size: 14px;
+            color: var(--text-lo);
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr;
+            gap: 48px;
+            margin-bottom: 48px;
+        }
+        .footer-col-title {
+            font-family: var(--font-display);
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-hi);
+            margin-bottom: 16px;
+        }
+        .footer-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .footer-links a:hover {
+            color: var(--coral);
+        }
+        .footer-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-hairline);
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Mobile Hamburger & Drawer */
+        .mobile-toggle {
+            display: none;
+            width: 40px;
+            height: 40px;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-hi);
+        }
+        .mobile-menu-drawer {
+            display: none;
+            position: fixed;
+            top: 76px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(8, 8, 10, 0.98);
+            backdrop-filter: blur(20px);
+            z-index: 99;
+            padding: 32px 24px;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .mobile-menu-drawer.open {
+            display: flex;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1024px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+            .hero-title { font-size: 44px; }
+            .bento-card-8, .bento-card-4, .bento-card-6 {
+                grid-column: span 12;
+            }
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+            .pricing-card.featured {
+                transform: none;
+            }
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 32px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-center, .nav-right .btn-primary {
+                display: none;
+            }
+            .mobile-toggle {
+                display: flex;
+            }
+            .hero-section {
+                padding-top: 110px;
+            }
+            .hero-title {
+                font-size: 34px;
+            }
+            .hero-metrics {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+            .section-title {
+                font-size: 28px;
+            }
+            .cta-banner {
+                padding: 40px 20px;
+            }
+            .cta-banner-title {
+                font-size: 28px;
+            }
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+            .footer-bottom {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+        }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+            .glow-orb { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Lighting Backdrop -->
+    <div class="ambient-glow-wrap" aria-hidden="true">
+        <div class="glow-orb glow-orb-1"></div>
+        <div class="glow-orb glow-orb-2"></div>
+        <div class="glow-orb glow-orb-3"></div>
+    </div>
+    <div class="grid-pattern" aria-hidden="true"></div>
+
+    <!-- Hidden Native Audio Elements for Demonstration -->
+    <audio id="audio-lofi" preload="metadata" src="./assets/audio/lofi.mp3"></audio>
+    <audio id="audio-acoustic" preload="metadata" src="./assets/audio/acoustic.mp3"></audio>
+    <audio id="audio-synthwave" preload="metadata" src="./assets/audio/synthwave.mp3"></audio>
+
+    <!-- Top Navigation Bar -->
+    <header class="site-header" id="siteHeader">
+        <div class="container nav-inner">
+            <a href="#" class="brand-logo" aria-label="MuseAI Home">
+                <img src="./assets/icon/ic_app.png" alt="MuseAI Icon" width="40" height="40">
+                <span class="brand-name">
+                    MuseAI
+                    <span class="brand-badge">STUDIO</span>
+                </span>
+            </a>
+
+            <!-- Desktop Nav Links -->
+            <nav class="nav-center" aria-label="Main navigation menu">
+                <a href="#features" class="nav-link" data-i18n="nav_features">Features</a>
+                <a href="#jukebox" class="nav-link" data-i18n="nav_jukebox">Audio Demos</a>
+                <a href="#how-it-works" class="nav-link" data-i18n="nav_workflow">Workflow</a>
+                <a href="#screens" class="nav-link" data-i18n="nav_screens">App Preview</a>
+                <a href="#pricing" class="nav-link" data-i18n="nav_pricing">Pricing</a>
+                <a href="#faq" class="nav-link" data-i18n="nav_faq">FAQ</a>
+                <a href="../policy/index.html" class="nav-link" target="_blank" data-i18n="nav_policy">Policy</a>
+            </nav>
+
+            <!-- Right Controls: Status, Language Switch & CTA -->
+            <div class="nav-right">
+                <div class="status-badge" title="AI music generation system ready">
+                    <span class="pulse-dot"></span>
+                    <span data-i18n="engine_online">Lyria v2.4 Online</span>
+                </div>
+
+                <div class="lang-switch" role="group" aria-label="Display language">
+                    <button class="lang-btn active" id="btnLangEn" onclick="setLanguage('en')">EN</button>
+                    <button class="lang-btn" id="btnLangVi" onclick="setLanguage('vi')">VI</button>
+                </div>
+
+                <a href="https://play.google.com/store/apps/details?id=com.museai.music" target="_blank" rel="noopener noreferrer" class="btn-primary" data-i18n="cta_download_nav">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <span>Get The App</span>
+                </a>
+
+                <button class="mobile-toggle" id="mobileMenuBtn" aria-label="Open mobile menu">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Drawer Menu -->
+    <div class="mobile-menu-drawer" id="mobileDrawer">
+        <a href="#features" class="nav-link" onclick="closeDrawer()" data-i18n="nav_features">Features</a>
+        <a href="#jukebox" class="nav-link" onclick="closeDrawer()" data-i18n="nav_jukebox">Audio Demos</a>
+        <a href="#how-it-works" class="nav-link" onclick="closeDrawer()" data-i18n="nav_workflow">Workflow</a>
+        <a href="#screens" class="nav-link" onclick="closeDrawer()" data-i18n="nav_screens">App Preview</a>
+        <a href="#pricing" class="nav-link" onclick="closeDrawer()" data-i18n="nav_pricing">Pricing</a>
+        <a href="#faq" class="nav-link" onclick="closeDrawer()" data-i18n="nav_faq">FAQ</a>
+        <a href="../policy/index.html" class="nav-link" onclick="closeDrawer()" data-i18n="nav_privacy">Privacy & Terms</a>
+        <div style="margin-top: 16px;">
+            <a href="https://play.google.com/store/apps/details?id=com.museai.music" target="_blank" rel="noopener noreferrer" class="btn-primary" style="width: 100%;" onclick="closeDrawer()" data-i18n="cta_download_nav">
+                Get The App
+            </a>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <!-- 1. HERO SECTION -->
+        <section class="hero-section">
+            <div class="container hero-grid">
+                
+                <!-- Hero Left: Strategic Copy -->
+                <div class="hero-content">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="section-eyebrow" data-i18n="hero_eyebrow">✨ NEXT-GEN AI MUSIC GENERATOR</span>
+                    </div>
+
+                    <h1 class="hero-title" data-i18n="hero_title">
+                        Turn Ideas Into <span class="gradient-text">Studio-Quality Tracks</span> In Seconds
+                    </h1>
+
+                    <p class="hero-subtitle" data-i18n="hero_desc">
+                        Describe any mood or upload a photo. MuseAI instantly composes complete studio tracks with vocals, master-grade arrangement, and lossless audio.
+                    </p>
+
+                    <div class="hero-actions">
+                        <a href="https://play.google.com/store/apps/details?id=com.museai.music" target="_blank" rel="noopener noreferrer" class="btn-primary" data-i18n="hero_cta_primary">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            <span>Start For Free</span>
+                        </a>
+                        <button class="btn-secondary" onclick="toggleHeroSamplePlay()" id="heroPlayDemoBtn" data-i18n="hero_cta_secondary">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            <span id="heroPlayBtnText">Play Demo Track ♫</span>
+                        </button>
+                    </div>
+
+                    <!-- Trust Metrics -->
+                    <div class="hero-metrics">
+                        <div class="metric-item">
+                            <span class="metric-number">1.2M+</span>
+                            <span class="metric-label" data-i18n="metric_tracks">Tracks Created</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-number">4.9 ★</span>
+                            <span class="metric-label" data-i18n="metric_rating">App Store Rating</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-number">24-bit</span>
+                            <span class="metric-label" data-i18n="metric_lossless">Lossless Flac Hi-Fi</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-number">100%</span>
+                            <span class="metric-label" data-i18n="metric_copyright">100% Commercial Rights</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hero Right: Interactive Studio Console Mockup -->
+                <div class="hero-console" id="heroConsoleCard">
+                    <div class="console-topbar">
+                        <div class="console-status">
+                            <span class="pulse-dot"></span>
+                            <span data-i18n="console_live_feed">AI Lyria 2.4 Engine Active</span>
+                        </div>
+                        <div class="badge-chip">48kHz / 24-bit</div>
+                    </div>
+
+                    <!-- Genre Preset Selector -->
+                    <div class="console-tab-row" role="tablist">
+                        <button class="genre-pill active" onclick="switchTrack('lofi', this)">Lo-Fi Chill</button>
+                        <button class="genre-pill" onclick="switchTrack('acoustic', this)">Acoustic Ballad</button>
+                        <button class="genre-pill" onclick="switchTrack('synthwave', this)">Synthwave Drive</button>
+                    </div>
+
+                    <!-- Dynamic Waveform Visualizer Display -->
+                    <div class="waveform-box">
+                        <div class="track-meta-row">
+                            <span class="track-title" id="consoleTrackTitle">Midnight Coffee Beats</span>
+                            <div class="track-stats">
+                                <span id="consoleBpm">85 BPM</span>
+                                <span>•</span>
+                                <span id="consoleKey">C Minor</span>
+                            </div>
+                        </div>
+                        <canvas id="consoleWaveform" class="waveform-canvas" width="400" height="64"></canvas>
+                    </div>
+
+                    <!-- Sample Prompt Used -->
+                    <div class="console-prompt-box">
+                        <span class="prompt-tag" data-i18n="prompt_label">SAMPLE PROMPT USED:</span>
+                        <span id="consolePromptText">"A cozy nostalgic lo-fi hip hop beat with warm rhodes electric piano chords, subtle vinyl crackle, and soothing melodic saxophone..."</span>
+                    </div>
+
+                    <!-- Playback Controls -->
+                    <div class="console-controls">
+                        <button class="play-btn-circle" id="consolePlayBtn" onclick="toggleActiveTrack()" aria-label="Play or pause audio preview">
+                            <svg id="playIconSvg" viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+                        </button>
+                        <div class="playback-progress-wrap">
+                            <div class="progress-bar" id="consoleProgressBar" onclick="seekTrack(event)">
+                                <div class="progress-fill" id="consoleProgressFill"></div>
+                            </div>
+                            <div class="time-labels">
+                                <span id="consoleCurrentTime">0:00</span>
+                                <span id="consoleTotalTime">0:30</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 2. CORE FEATURES (Bento Grid) -->
+        <section id="features">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-eyebrow" data-i18n="features_eyebrow">BREAKTHROUGH TECH</span>
+                    <h2 class="section-title" data-i18n="features_title">Full Studio Music Production In The Palm Of Your Hand</h2>
+                    <p class="section-desc" data-i18n="features_desc">From intelligent lyrics writing and stem separation to unique photo-to-music generation.</p>
+                </div>
+
+                <div class="bento-grid">
+                    <!-- Bento 1: Text-to-Music Pro Engine (8 cols) -->
+                    <div class="bento-card bento-card-8">
+                        <div>
+                            <span class="bento-tag">CORE ENGINE</span>
+                            <h3 class="bento-card-title" data-i18n="feat1_title">Prompt to Full Song — Simple & Pro Mode</h3>
+                            <p class="bento-card-desc" data-i18n="feat1_desc">
+                                No music theory needed. Just type a vibe or story, and AI Lyrics Writer crafts structured verses, choruses, and bridges with professional arrangements across 20+ genres.
+                            </p>
+                        </div>
+                        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-hairline); border-radius: var(--radius-md); padding: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <span class="badge-chip">Pop</span>
+                                <span class="badge-chip">EDM Festival</span>
+                                <span class="badge-chip">Lo-Fi</span>
+                                <span class="badge-chip">Rock Anthem</span>
+                                <span class="badge-chip">Cinematic</span>
+                                <span class="badge-chip">Hip Hop</span>
+                            </div>
+                            <span style="font-family: var(--font-mono); font-size: 12px; color: var(--coral);">Full 3-Minute Pro Extended Songs</span>
+                        </div>
+                    </div>
+
+                    <!-- Bento 2: Photo to Music (4 cols) -->
+                    <div class="bento-card bento-card-4">
+                        <div>
+                            <span class="bento-tag">EXCLUSIVE AI</span>
+                            <h3 class="bento-card-title" data-i18n="feat2_title">Photo-to-Music Generation</h3>
+                            <p class="bento-card-desc" data-i18n="feat2_desc">
+                                Upload a photo or artwork. Machine vision analyzes color palette, lighting mood, and scene emotion to synthesize an authentic matching soundtrack.
+                            </p>
+                        </div>
+                        <div class="photo-music-demo">
+                            <div class="photo-preview-tile">
+                                <img src="./assets/images/genre_cinematic.png" alt="Cinematic Sunset Artwork">
+                                <span class="photo-tag-overlay">Original Image</span>
+                            </div>
+                            <div class="converter-arrow">➔</div>
+                            <div class="music-result-tile">
+                                <span class="result-track-name">Golden Horizon</span>
+                                <div class="result-badges">
+                                    <span class="badge-chip">Acoustic</span>
+                                    <span class="badge-chip">Warm Vibe</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bento 3: Stem Separation & Studio Export (6 cols) -->
+                    <div class="bento-card bento-card-6">
+                        <div>
+                            <span class="bento-tag">PRO PRODUCTION</span>
+                            <h3 class="bento-card-title" data-i18n="feat3_title">Stem Separation & 24-bit Lossless Export</h3>
+                            <p class="bento-card-desc" data-i18n="feat3_desc">
+                                Isolate individual layers with one tap: Vocals, Drums, Bass, and Melody for video editing, remixes, or custom phone ringtones.
+                            </p>
+                        </div>
+                        <div class="stem-list">
+                            <div class="stem-item">
+                                <div class="stem-left">
+                                    <span class="stem-icon">🎤</span>
+                                    <span class="stem-name">Lead Vocals & Harmonies</span>
+                                </div>
+                                <div class="stem-vol-bar"><div class="stem-vol-fill" style="width: 85%;"></div></div>
+                                <button class="stem-mute-btn" onclick="this.classList.toggle('active')">MUTE</button>
+                            </div>
+                            <div class="stem-item">
+                                <div class="stem-left">
+                                    <span class="stem-icon">🥁</span>
+                                    <span class="stem-name">Drums & Percussion</span>
+                                </div>
+                                <div class="stem-vol-bar"><div class="stem-vol-fill" style="width: 70%;"></div></div>
+                                <button class="stem-mute-btn" onclick="this.classList.toggle('active')">MUTE</button>
+                            </div>
+                            <div class="stem-item">
+                                <div class="stem-left">
+                                    <span class="stem-icon">🎸</span>
+                                    <span class="stem-name">Bassline & Sub Frequencies</span>
+                                </div>
+                                <div class="stem-vol-bar"><div class="stem-vol-fill" style="width: 90%;"></div></div>
+                                <button class="stem-mute-btn" onclick="this.classList.toggle('active')">MUTE</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bento 4: Commercial Rights & Multi-language (6 cols) -->
+                    <div class="bento-card bento-card-6">
+                        <div>
+                            <span class="bento-tag">COMMERCIAL FREEDOM</span>
+                            <h3 class="bento-card-title" data-i18n="feat4_title">100% Commercial Royalty-Free & 16 Languages</h3>
+                            <p class="bento-card-desc" data-i18n="feat4_desc">
+                                All creations are 100% yours. Distribute to Spotify, Apple Music, YouTube, and TikTok with zero copyright strike worries. Full multilingual support included.
+                            </p>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px;">
+                            <div style="background: rgba(255, 255, 255, 0.04); border-radius: 10px; padding: 14px; text-align: center;">
+                                <div style="font-size: 20px; font-weight: 800; color: var(--coral);" class="font-display">YouTube</div>
+                                <div style="font-size: 11px; color: var(--text-lo); margin-top: 4px;">Zero Copyright Strike</div>
+                            </div>
+                            <div style="background: rgba(255, 255, 255, 0.04); border-radius: 10px; padding: 14px; text-align: center;">
+                                <div style="font-size: 20px; font-weight: 800; color: var(--mint);" class="font-display">TikTok</div>
+                                <div style="font-size: 11px; color: var(--text-lo); margin-top: 4px;">Viral BGM Ready</div>
+                            </div>
+                            <div style="background: rgba(255, 255, 255, 0.04); border-radius: 10px; padding: 14px; text-align: center;">
+                                <div style="font-size: 20px; font-weight: 800; color: #FFFFFF;" class="font-display">Spotify</div>
+                                <div style="font-size: 11px; color: var(--text-lo); margin-top: 4px;">Distribute Anywhere</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. LIVE JUKEBOX & AUDIO SHOWCASE -->
+        <section id="jukebox" style="background: linear-gradient(180deg, transparent 0%, rgba(14, 14, 19, 0.6) 50%, transparent 100%);">
+            <div class="container">
+                <div class="section-header center">
+                    <span class="section-eyebrow" data-i18n="jukebox_eyebrow">REAL ACOUSTIC QUALITY</span>
+                    <h2 class="section-title" data-i18n="jukebox_title">Listen To Authentic Tracks Created With MuseAI</h2>
+                    <p class="section-desc" data-i18n="jukebox_desc">Click play below to experience pure lossless audio crafted by our cutting-edge neural audio model.</p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+                    <!-- Track 1: Lo-Fi -->
+                    <div class="bento-card" style="padding: 24px;">
+                        <div style="height: 160px; border-radius: var(--radius-md); overflow: hidden; margin-bottom: 16px; position: relative;">
+                            <img src="./assets/images/genre_lofi.png" alt="Lo-Fi Genre Artwork" style="width: 100%; height: 100%; object-fit: cover;">
+                            <span style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); font-size: 11px; font-family: var(--font-mono); color: var(--mint); padding: 3px 8px; border-radius: var(--radius-pill);">85 BPM</span>
+                        </div>
+                        <h4 style="font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 6px;">Midnight Coffee Beats</h4>
+                        <p style="font-size: 13px; color: var(--text-lo); margin-bottom: 16px;">Calm chillout music for deep focus & study with vintage Rhodes chords and rain ambience.</p>
+                        <button class="btn-secondary" style="width: 100%;" onclick="playSpecificTrack('lofi')">
+                            <span>▶ Play This Track</span>
+                        </button>
+                    </div>
+
+                    <!-- Track 2: Acoustic -->
+                    <div class="bento-card" style="padding: 24px;">
+                        <div style="height: 160px; border-radius: var(--radius-md); overflow: hidden; margin-bottom: 16px; position: relative;">
+                            <img src="./assets/images/genre_acoustic.png" alt="Acoustic Ballad Artwork" style="width: 100%; height: 100%; object-fit: cover;">
+                            <span style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); font-size: 11px; font-family: var(--font-mono); color: var(--coral); padding: 3px 8px; border-radius: var(--radius-pill);">92 BPM</span>
+                        </div>
+                        <h4 style="font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 6px;">Melancholy Acoustic Ballad</h4>
+                        <p style="font-size: 13px; color: var(--text-lo); margin-bottom: 16px;">Warm wooden acoustic guitar blended with emotional cello textures and delicate piano.</p>
+                        <button class="btn-secondary" style="width: 100%;" onclick="playSpecificTrack('acoustic')">
+                            <span>▶ Play This Track</span>
+                        </button>
+                    </div>
+
+                    <!-- Track 3: Synthwave -->
+                    <div class="bento-card" style="padding: 24px;">
+                        <div style="height: 160px; border-radius: var(--radius-md); overflow: hidden; margin-bottom: 16px; position: relative;">
+                            <img src="./assets/images/genre_edm.png" alt="Synthwave Drive Artwork" style="width: 100%; height: 100%; object-fit: cover;">
+                            <span style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); font-size: 11px; font-family: var(--font-mono); color: #818CF8; padding: 3px 8px; border-radius: var(--radius-pill);">124 BPM</span>
+                        </div>
+                        <h4 style="font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 6px;">Neon Midnight Drive</h4>
+                        <p style="font-size: 13px; color: var(--text-lo); margin-bottom: 16px;">80s retro electronic adrenaline with rolling arpeggiated basslines and punchy synth leads.</p>
+                        <button class="btn-secondary" style="width: 100%;" onclick="playSpecificTrack('synthwave')">
+                            <span>▶ Play This Track</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. HOW IT WORKS (3 Simple Steps) -->
+        <section id="how-it-works">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-eyebrow" data-i18n="steps_eyebrow">STREAMLINED WORKFLOW</span>
+                    <h2 class="section-title" data-i18n="steps_title">Become A Music Producer In 3 Simple Steps</h2>
+                    <p class="section-desc" data-i18n="steps_desc">Streamline creation and unleash your creative potential without steep learning curves.</p>
+                </div>
+
+                <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-num">01</div>
+                        <h3 class="step-title" data-i18n="step1_title">Enter A Prompt Or Upload A Photo</h3>
+                        <p class="step-desc" data-i18n="step1_desc">
+                            Describe any musical idea, mood, or pick an image. AI Prompt Expand and Lyric Generator handle the heavy lifting.
+                        </p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-num">02</div>
+                        <h3 class="step-title" data-i18n="step2_title">Choose Genre & Pro Parameters</h3>
+                        <p class="step-desc" data-i18n="step2_desc">
+                            Pick your vibe from Pop, EDM, Rock to Lo-Fi. Choose a 30s quick clip or a full 3-minute studio song.
+                        </p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-num">03</div>
+                        <h3 class="step-title" data-i18n="step3_title">Generate & Export Lossless Flac</h3>
+                        <p class="step-desc" data-i18n="step3_desc">
+                            In under 15 seconds, your track is ready. Listen, stem-split, trim ringtones, or export high-resolution audio.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. SCREENSHOT GALLERY -->
+        <section id="screens">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-eyebrow" data-i18n="screens_eyebrow">APP UI EXPERIENCE</span>
+                    <h2 class="section-title" data-i18n="screens_title">Sleek, Dark Onyx Studio Interface</h2>
+                    <p class="section-desc" data-i18n="screens_desc">Carefully calibrated for flow state and maximum inspiration on every device.</p>
+                </div>
+
+                <div class="screens-gallery-wrap">
+                    <div class="screen-device-mock">
+                        <img src="./store_listing_540x960/01_hero_540x960.jpg" alt="Instant Music Studio" loading="lazy">
+                        <div class="screen-caption" data-i18n="screen1_cap">Instant Creation</div>
+                    </div>
+                    <div class="screen-device-mock">
+                        <img src="./store_listing_540x960/02_describe_540x960.jpg" alt="Smart Lyrics & AI prompt expand" loading="lazy">
+                        <div class="screen-caption" data-i18n="screen2_cap">Smart Lyrics</div>
+                    </div>
+                    <div class="screen-device-mock">
+                        <img src="./store_listing_540x960/03_photo_to_music_540x960.jpg" alt="Photo-to-Music" loading="lazy">
+                        <div class="screen-caption" data-i18n="screen3_cap">Photo To Music</div>
+                    </div>
+                    <div class="screen-device-mock">
+                        <img src="./store_listing_540x960/04_player_540x960.jpg" alt="Lossless Player" loading="lazy">
+                        <div class="screen-caption" data-i18n="screen4_cap">Hi-Fi Player</div>
+                    </div>
+                    <div class="screen-device-mock">
+                        <img src="./store_listing_540x960/05_studio_540x960.jpg" alt="My Studio personal library" loading="lazy">
+                        <div class="screen-caption" data-i18n="screen5_cap">Personal Studio</div>
+                    </div>
+                    <div class="screen-device-mock">
+                        <img src="./store_listing_540x960/06_explore_540x960.jpg" alt="Explore trending music" loading="lazy">
+                        <div class="screen-caption" data-i18n="screen6_cap">Trending Tracks</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. WHY MUSEAI COMPARISON TABLE -->
+        <section id="comparison">
+            <div class="container">
+                <div class="section-header center">
+                    <span class="section-eyebrow" data-i18n="compare_eyebrow">WHY MUSEAI</span>
+                    <h2 class="section-title" data-i18n="compare_title">Why Creators Prefer MuseAI</h2>
+                    <p class="section-desc" data-i18n="compare_desc">Clear advantages over legacy DAWs and generic AI music tools.</p>
+                </div>
+
+                <div class="comparison-table-wrap">
+                    <table class="compare-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 34%;">Evaluation Criteria</th>
+                                <th style="width: 22%;">Traditional DAW</th>
+                                <th style="width: 22%;">Generic AI Music</th>
+                                <th style="width: 22%;" class="highlight-col">MuseAI Pro Studio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Track creation time</td>
+                                <td>Days to weeks</td>
+                                <td>1 to 2 minutes</td>
+                                <td class="highlight-col">⚡ Under 15 seconds</td>
+                            </tr>
+                            <tr>
+                                <td>Music theory needed</td>
+                                <td>Strictly required</td>
+                                <td>Complex prompt editing</td>
+                                <td class="highlight-col"><span class="check-icon">✓</span> Zero music theory needed</td>
+                            </tr>
+                            <tr>
+                                <td>Max song duration</td>
+                                <td>Unlimited</td>
+                                <td>Only 15 — 30 seconds</td>
+                                <td class="highlight-col"><span class="check-icon">✓</span> Up to 3 minutes (Full Song)</td>
+                            </tr>
+                            <tr>
+                                <td>Photo-to-music generation</td>
+                                <td><span class="cross-icon">✕</span> None</td>
+                                <td><span class="cross-icon">✕</span> None</td>
+                                <td class="highlight-col"><span class="check-icon">✓</span> Exclusive Photo-to-Music</td>
+                            </tr>
+                            <tr>
+                                <td>Stem separation (Vocals, drums, bass)</td>
+                                <td>Expensive third-party plugins</td>
+                                <td><span class="cross-icon">✕</span> Not supported</td>
+                                <td class="highlight-col"><span class="check-icon">✓</span> 1-Click Stem Isolation</td>
+                            </tr>
+                            <tr>
+                                <td>100% Commercial rights</td>
+                                <td>Individual copyright</td>
+                                <td>High risk of Content ID strikes</td>
+                                <td class="highlight-col"><span class="check-icon">✓</span> Lifetime Royalty-Free</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. TRANSPARENT PRICING TIERS -->
+        <section id="pricing">
+            <div class="container">
+                <div class="section-header center">
+                    <span class="section-eyebrow" data-i18n="pricing_eyebrow">TRANSPARENT PRICING</span>
+                    <h2 class="section-title" data-i18n="pricing_title">Choose The Plan That Fits Your Vision</h2>
+                    <p class="section-desc" data-i18n="pricing_desc">Get started for free or upgrade to unlock unlimited studio creations.</p>
+                </div>
+
+                <div class="pricing-grid">
+                    <!-- Starter Free Plan -->
+                    <div class="pricing-card">
+                        <div>
+                            <h3 class="plan-name" data-i18n="plan_free_name">Starter (Free)</h3>
+                            <p style="font-size: 13.5px; color: var(--text-lo);">Perfect for exploring AI music creation.</p>
+                            <div class="plan-price-wrap">
+                                <span class="plan-price">$0</span>
+                                <span class="plan-period">/ Forever</span>
+                            </div>
+                            <ul class="plan-features">
+                                <li>
+                                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                    <span>Create 30-second clips for free</span>
+                                </li>
+                                <li>
+                                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                    <span>Access 20+ core music genres</span>
+                                </li>
+                                <li>
+                                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                    <span>Private Local-First My Studio storage</span>
+                                </li>
+                                <li style="color: var(--text-muted);">
+                                    <span style="width: 16px; text-align: center;">-</span>
+                                    <span>Daily generation limit</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <a href="https://play.google.com/store/apps/details?id=com.museai.music" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="width: 100%;" data-i18n="plan_free_btn">Start For Free</a>
+                    </div>
+
+                    <!-- Pro Unlimited Plan (Featured) -->
+                    <div class="pricing-card featured">
+                        <span class="popular-badge" data-i18n="popular_badge">MOST POPULAR</span>
+                        <div>
+                            <h3 class="plan-name" data-i18n="plan_pro_name">MuseAI Pro Unlimited</h3>
+                            <p style="font-size: 13.5px; color: var(--text-lo);">Unlock the full power of studio audio production.</p>
+                            <div class="plan-price-wrap">
+                                <span class="plan-price">$4.99</span>
+                                <span class="plan-period">/ Week</span>
+                            </div>
+                            <ul class="plan-features">
+                                <li>
+                                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                    <span>Unlimited studio-quality songs</span>
+                                </li>
+                                <li>
+                                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                    <span>Full 3-Minute extended tracks</span>
+                                </li>
+                                <li>
+                                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                    <span>24-bit Lossless Flac / WAV audio export</span>
+                                </li>
+                                <li>
+                                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                    <span>Stem separation: Vocals, drums, bass</span>
+                                </li>
+                                <li>
+                                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                    <span>100% Commercial rights & monetization</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <a href="https://play.google.com/store/apps/details?id=com.museai.music" target="_blank" rel="noopener noreferrer" class="btn-primary" style="width: 100%;" data-i18n="plan_pro_btn">Upgrade To Pro</a>
+                    </div>
+
+                    <!-- Token Coin Pack -->
+                    <div class="pricing-card">
+                        <div>
+                            <h3 class="plan-name" data-i18n="plan_token_name">Flexible Token Pack</h3>
+                            <p style="font-size: 13.5px; color: var(--text-lo);">Ideal for occasional creators without subscriptions.</p>
+                            <div class="plan-price-wrap">
+                                <span class="plan-price">$1.99</span>
+                                <span class="plan-period">/ 10 Songs</span>
+                            </div>
+                            <ul class="plan-features">
+                                <li>
+                                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                    <span>Pay-as-you-go coin consumption</span>
+                                </li>
+                                <li>
+                                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                    <span>Tokens never expire</span>
+                                </li>
+                                <li>
+                                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                    <span>No recurring automatic charges</span>
+                                </li>
+                                <li>
+                                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                    <span>Rewarded ads available for free tokens</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <a href="https://play.google.com/store/apps/details?id=com.museai.music" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="width: 100%;" data-i18n="plan_token_btn">Buy Tokens</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. FREQUENTLY ASKED QUESTIONS (FAQ) -->
+        <section id="faq">
+            <div class="container">
+                <div class="section-header center">
+                    <span class="section-eyebrow" data-i18n="faq_eyebrow">FAQ</span>
+                    <h2 class="section-title" data-i18n="faq_title">Frequently Asked Questions</h2>
+                    <p class="section-desc" data-i18n="faq_desc">Everything you need to know about licensing, stems, audio fidelity, and privacy.</p>
+                </div>
+
+                <div class="faq-wrap">
+                    <div class="faq-item active">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span data-i18n="faq1_q">Do I own commercial rights to music created in MuseAI?</span>
+                            <span class="faq-icon">+</span>
+                        </button>
+                        <div class="faq-answer" data-i18n="faq1_a">
+                            Yes. All music created under your account (especially with Pro access) belongs to you 100%. You can distribute on Spotify, monetize on YouTube, use in TikTok, games, and podcasts without royalty claims.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span data-i18n="faq2_q">What is the export audio quality?</span>
+                            <span class="faq-icon">+</span>
+                        </button>
+                        <div class="faq-answer" data-i18n="faq2_a">
+                            MuseAI outputs 24-bit 48kHz lossless Flac / WAV files or 320kbps high-bitrate MP3s with expansive studio acoustic headroom.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span data-i18n="faq3_q">How does Photo-to-Music work?</span>
+                            <span class="faq-icon">+</span>
+                        </button>
+                        <div class="faq-answer" data-i18n="faq3_a">
+                            Computer vision evaluates the uploaded photo's lighting, ambient temperature, contrast, and emotion, automatically mapping visual features into musical timbre, key signature, and instruments.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span data-i18n="faq4_q">Is my personal library stored privately?</span>
+                            <span class="faq-icon">+</span>
+                        </button>
+                        <div class="faq-answer" data-i18n="faq4_a">
+                            Yes. MuseAI utilizes a Local-First architecture. Your generated songs and lyrics remain securely stored on your own device.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. FINAL HIGH-CONVERSION CTA -->
+        <section id="download" style="padding-bottom: 120px;">
+            <div class="container">
+                <div class="cta-banner">
+                    <div class="cta-banner-content">
+                        <h2 class="cta-banner-title" data-i18n="final_cta_title">Ready To Produce Your Next Hit With MuseAI?</h2>
+                        <p class="cta-banner-desc" data-i18n="final_cta_desc">
+                            Join over 1.2 million music creators worldwide. Download the app today and create your first song free!
+                        </p>
+                        
+                        <div class="cta-button-row">
+                            <a href="https://play.google.com/store/apps/details?id=com.museai.music" target="_blank" rel="noopener noreferrer" class="btn-primary" style="padding: 16px 32px; font-size: 16px;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.05-.83.24l-1.88 3.24c-1.35-.58-2.85-.9-4.47-.9s-3.12.32-4.47.9L5.65 5.69c-.19-.29-.55-.39-.84-.24-.3.16-.42.54-.26.85l1.84 3.18C3.27 11.23 1.15 14.51 1 18.36h22c-.15-3.85-2.27-7.13-5.4-8.88zM7 15.25c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25zm10 0c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25z"/></svg>
+                                <span>Get on Google Play</span>
+                            </a>
+                            <a href="#" class="btn-secondary" style="padding: 16px 32px; font-size: 16px;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.92-2.85-.9.04-1.99.6-2.64 1.35-.57.65-1.07 1.72-0.93 2.74 1.01.08 2.03-.49 2.65-1.24z"/></svg>
+                                <span>Download on App Store</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div class="brand-logo" style="margin-bottom: 14px;">
+                        <img src="./assets/icon/ic_app.png" alt="MuseAI" width="36" height="36">
+                        <span class="brand-name">MuseAI</span>
+                    </div>
+                    <p style="font-size: 13.5px; line-height: 1.6; max-width: 320px; color: var(--text-lo);">
+                        MuseAI — Next-generation AI music creation studio developed by KasumiLabs. Bringing studio-grade sound production to every creator.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="footer-col-title">Product</h4>
+                    <ul class="footer-links">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#jukebox">Audio Demos</a></li>
+                        <li><a href="#how-it-works">Workflow</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="footer-col-title">Legal & Policy</h4>
+                    <ul class="footer-links">
+                        <li><a href="../policy/index.html">Privacy Policy</a></li>
+                        <li><a href="../policy/terms.html">Terms of Service & EULA</a></li>
+                        <li><a href="../policy/terms.html#commercial-use">Commercial Rights</a></li>
+                        <li><a href="mailto:support@kasumilabs.com">Contact Support</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="footer-col-title">KasumiLabs Studio</h4>
+                    <p style="font-size: 13px; line-height: 1.6; color: var(--text-lo); margin-bottom: 12px;">
+                        Email: support@kasumilabs.com<br>
+                        24/7 technical support for Pro creators.
+                    </p>
+                    <div style="font-family: var(--font-mono); font-size: 11px; color: var(--mint);">
+                        ● App Version: 1.0.5 (Build 105)
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <span>© 2026 KasumiLabs · MuseAI. All rights reserved.</span>
+                <span>Designed with UI/UX Pro Max · Taste Skill Enforced</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- INTERACTIVE JAVASCRIPT CONTROLS -->
+    <script>
+        // Track Data Definitions
+        const tracks = {
+            lofi: {
+                title: "Midnight Coffee Beats",
+                bpm: "85 BPM",
+                key: "C Minor",
+                audioId: "audio-lofi",
+                prompt: '"A cozy nostalgic lo-fi hip hop beat with warm rhodes electric piano chords, subtle vinyl crackle, and soothing melodic saxophone..."',
+                color: "#66EECE"
+            },
+            acoustic: {
+                title: "Melancholy Acoustic Ballad",
+                bpm: "92 BPM",
+                key: "G Major",
+                audioId: "audio-acoustic",
+                prompt: '"A slow-tempo melancholy acoustic piano ballad, featuring soft cello layers and rain ambience in the background..."',
+                color: "#EE6D66"
+            },
+            synthwave: {
+                title: "Neon Midnight Drive",
+                bpm: "124 BPM",
+                key: "F# Minor",
+                audioId: "audio-synthwave",
+                prompt: '"High-energy 80s retro synthwave anthem with driving rolling basslines, punchy analog drums, and soaring neon lead melodies..."',
+                color: "#818CF8"
+            }
+        };
+
+        let currentTrackKey = "lofi";
+        let isPlaying = false;
+        let activeAudio = null;
+        let animationFrameId = null;
+
+        // Waveform Canvas Setup
+        const canvas = document.getElementById("consoleWaveform");
+        const ctx = canvas.getContext("2d");
+
+        // Localization Dictionary
+        const i18n = {
+            en: {
+                nav_features: "Features",
+                nav_jukebox: "Audio Demos",
+                nav_workflow: "Workflow",
+                nav_screens: "App Preview",
+                nav_pricing: "Pricing",
+                nav_faq: "FAQ",
+                nav_policy: "Legal & Policy",
+                nav_privacy: "Privacy & Terms",
+                engine_online: "Lyria v2.4 Online",
+                cta_download_nav: "Get The App",
+                hero_eyebrow: "✨ NEXT-GEN AI MUSIC GENERATOR",
+                hero_title: 'Turn Ideas Into <span class="gradient-text">Studio-Quality Tracks</span> In Seconds',
+                hero_desc: "Describe any mood or upload a photo. MuseAI instantly composes complete studio tracks with vocals, master-grade arrangement, and lossless audio.",
+                hero_cta_primary: "Start For Free",
+                hero_cta_secondary: "Play Demo Track ♫",
+                metric_tracks: "Tracks Created",
+                metric_rating: "App Store Rating",
+                metric_lossless: "Lossless Flac Hi-Fi",
+                metric_copyright: "100% Commercial Rights",
+                console_live_feed: "AI Lyria 2.4 Engine Active",
+                prompt_label: "SAMPLE PROMPT USED:",
+                features_eyebrow: "BREAKTHROUGH TECH",
+                features_title: "Full Studio Music Production In The Palm Of Your Hand",
+                features_desc: "From intelligent lyrics writing and stem separation to unique photo-to-music generation.",
+                feat1_title: "Prompt to Full Song — Simple & Pro Mode",
+                feat1_desc: "No music theory needed. Just type a vibe or story, and AI Lyrics Writer crafts structured verses, choruses, and bridges with professional arrangements across 20+ genres.",
+                feat2_title: "Photo-to-Music Generation",
+                feat2_desc: "Upload a photo or artwork. Machine vision analyzes color palette, lighting mood, and scene emotion to synthesize an authentic matching soundtrack.",
+                feat3_title: "Stem Separation & 24-bit Lossless Export",
+                feat3_desc: "Isolate individual layers with one tap: Vocals, Drums, Bass, and Melody for video editing, remixes, or custom phone ringtones.",
+                feat4_title: "100% Commercial Royalty-Free & 16 Languages",
+                feat4_desc: "All creations are 100% yours. Distribute to Spotify, Apple Music, YouTube, and TikTok with zero copyright strike worries. Full multilingual support included.",
+                jukebox_eyebrow: "REAL ACOUSTIC QUALITY",
+                jukebox_title: "Listen To Authentic Tracks Created With MuseAI",
+                jukebox_desc: "Click play below to experience pure lossless audio crafted by our cutting-edge neural audio model.",
+                steps_eyebrow: "STREAMLINED WORKFLOW",
+                steps_title: "Become A Music Producer In 3 Simple Steps",
+                steps_desc: "Streamline creation and unleash your creative potential without steep learning curves.",
+                step1_title: "Enter A Prompt Or Upload A Photo",
+                step1_desc: "Describe any musical idea, mood, or pick an image. AI Prompt Expand and Lyric Generator handle the heavy lifting.",
+                step2_title: "Choose Genre & Pro Parameters",
+                step2_desc: "Pick your vibe from Pop, EDM, Rock to Lo-Fi. Choose a 30s quick clip or a full 3-minute studio song.",
+                step3_title: "Generate & Export Lossless Flac",
+                step3_desc: "In under 15 seconds, your track is ready. Listen, stem-split, trim ringtones, or export high-resolution audio.",
+                screens_eyebrow: "APP UI EXPERIENCE",
+                screens_title: "Sleek, Dark Onyx Studio Interface",
+                screens_desc: "Carefully calibrated for flow state and maximum inspiration on every device.",
+                screen1_cap: "Instant Creation",
+                screen2_cap: "Smart Lyrics",
+                screen3_cap: "Photo To Music",
+                screen4_cap: "Hi-Fi Player",
+                screen5_cap: "Personal Studio",
+                screen6_cap: "Trending Tracks",
+                compare_eyebrow: "WHY MUSEAI",
+                compare_title: "Why Creators Prefer MuseAI",
+                compare_desc: "Clear advantages over legacy DAWs and generic AI music tools.",
+                pricing_eyebrow: "TRANSPARENT PRICING",
+                pricing_title: "Choose The Plan That Fits Your Vision",
+                pricing_desc: "Get started for free or upgrade to unlock unlimited studio creations.",
+                popular_badge: "MOST POPULAR",
+                plan_free_name: "Starter (Free)",
+                plan_free_btn: "Start For Free",
+                plan_pro_name: "MuseAI Pro Unlimited",
+                plan_pro_btn: "Upgrade To Pro",
+                plan_token_name: "Flexible Token Pack",
+                plan_token_btn: "Buy Tokens",
+                faq_eyebrow: "FAQ",
+                faq_title: "Frequently Asked Questions",
+                faq_desc: "Everything you need to know about licensing, stems, audio fidelity, and privacy.",
+                faq1_q: "Do I own commercial rights to music created in MuseAI?",
+                faq1_a: "Yes. All music created under your account (especially with Pro access) belongs to you 100%. You can distribute on Spotify, monetize on YouTube, use in TikTok, games, and podcasts without royalty claims.",
+                faq2_q: "What is the export audio quality?",
+                faq2_a: "MuseAI outputs 24-bit 48kHz lossless Flac / WAV files or 320kbps high-bitrate MP3s with expansive studio acoustic headroom.",
+                faq3_q: "How does Photo-to-Music work?",
+                faq3_a: "Computer vision evaluates the uploaded photo's lighting, ambient temperature, contrast, and emotion, automatically mapping visual features into musical timbre, key signature, and instruments.",
+                faq4_q: "Is my personal library stored privately?",
+                faq4_a: "Yes. MuseAI utilizes a Local-First architecture. Your generated songs and lyrics remain securely stored on your own device.",
+                final_cta_title: "Ready To Produce Your Next Hit With MuseAI?",
+                final_cta_desc: "Join over 1.2 million music creators worldwide. Download the app today and create your first song free!"
+            },
+            vi: {
+                nav_features: "Tính Năng",
+                nav_jukebox: "Nghe Thử Nhạc",
+                nav_workflow: "Quy Trình",
+                nav_screens: "Giao Diện",
+                nav_pricing: "Gói Cước",
+                nav_faq: "Hỏi Đáp",
+                nav_policy: "Chính Sách & Điều Khoản",
+                nav_privacy: "Chính Sách & Điều Khoản",
+                engine_online: "Lyria v2.4 Online",
+                cta_download_nav: "Tải App Ngay",
+                hero_eyebrow: "✨ NEXT-GEN AI MUSIC GENERATOR",
+                hero_title: 'Biến Ý Tưởng Thành <span class="gradient-text">Bản Nhạc Studio</span> Trong Vài Giây',
+                hero_desc: "Chỉ cần gõ mô tả cảm xúc hoặc tải lên bức ảnh, MuseAI sẽ sáng tác ca khúc trọn vẹn gồm giọng hát, beat đỉnh cao và nhạc cụ chuẩn phòng thu.",
+                hero_cta_primary: "Trải Nghiệm Miễn Phí",
+                hero_cta_secondary: "Nghe Bản Demo Thử ♫",
+                metric_tracks: "Bản Nhạc Đã Tạo",
+                metric_rating: "Đánh Giá Store",
+                metric_lossless: "Lossless Flac Hi-Fi",
+                metric_copyright: "100% Bản Quyền Thương Mại",
+                console_live_feed: "AI Lyria 2.4 Engine Active",
+                prompt_label: "PROMPT MẪU TẠO BÀI NÀY:",
+                features_eyebrow: "CÔNG NGHỆ ĐỘT PHÁ",
+                features_title: "Tất Cả Công Cụ Sản Xuất Âm Nhạc Trong Lòng Bàn Tay",
+                features_desc: "Từ viết lời thông minh, tách beat chuyên sâu đến chuyển đổi hình ảnh thành giai điệu độc bản.",
+                feat1_title: "Soạn Nhạc Từ Câu Từ — Simple & Pro Mode",
+                feat1_desc: "Bạn không cần biết nhạc lý. Chỉ cần gõ chủ đề hoặc câu chuyện, tính năng AI Lyrics Writer sẽ viết lời hoàn chỉnh có vần điệu (Verse, Chorus, Bridge) và phối khí tự động theo 20+ phong cách nhạc thời thượng.",
+                feat2_title: "Ảnh Hóa Giai Điệu (Photo-to-Music)",
+                feat2_desc: "Tải lên tấm ảnh kỷ niệm, hoàng hôn hay bức tranh nghệ thuật. AI Vision phân tích màu sắc, ánh sáng và cảm xúc để hòa âm bản nhạc riêng cho bức ảnh của bạn.",
+                feat3_title: "Tách Stems & Xuất File 24-bit Lossless",
+                feat3_desc: "Dễ dàng bóc tách riêng từng bè âm thanh: Vocals (giọng hát), Drums (bộ gõ), Bass và Nhạc cụ đệm để remix, chèn video hoặc làm nhạc chuông điện thoại.",
+                feat4_title: "100% Bản Quyền Thương Mại & 16 Ngôn Ngữ",
+                feat4_desc: "Mọi bản nhạc bạn tạo ra thuộc về bạn hoàn toàn. Tự do đăng tải lên YouTube, TikTok, Spotify, podcast hay game mà không lo gậy bản quyền Content ID. Hỗ trợ đa ngôn ngữ bao gồm Tiếng Việt, Anh, Hàn, Nhật, Tây Ban Nha,...",
+                jukebox_eyebrow: "CHẤT LƯỢNG ÂM THANH THỰC TẾ",
+                jukebox_title: "Lắng Nghe Các Tác Phẩm Do MuseAI Khởi Tạo",
+                jukebox_desc: "Bấm phát bên dưới để trải nghiệm chất lượng lossless sắc nét từ engine thế hệ mới.",
+                steps_eyebrow: "QUY TRÌNH TINH GỌN",
+                steps_title: "Chỉ 3 Bước Để Trở Thành Nhà Sản Xuất Âm Nhạc",
+                steps_desc: "Tối ưu hóa thời gian và giải phóng tiềm năng sáng tạo của bạn.",
+                step1_title: "Nhập Ý Tưởng Hoặc Chọn Ảnh",
+                step1_desc: "Mô tả bất kỳ cảm xúc, câu chuyện nào bạn muốn hoặc tải lên bức ảnh visual. AI hỗ trợ mở rộng prompt (AI Expand) và tạo lời tự động.",
+                step2_title: "Chọn Thể Loại & Tùy Biến Pro",
+                step2_desc: "Chọn phong cách từ Pop, EDM, Rock đến Lo-Fi. Bạn có thể chọn thời lượng (Clip 30 giây miễn phí hoặc bản nhạc Pro 3 phút hoàn chỉnh).",
+                step3_title: "Nhận Bài Hát & Xuất Lossless",
+                step3_desc: "Chỉ sau 15 giây, bản nhạc studio hoàn tất. Nghe trực tiếp, lưu vào My Studio, cắt nhạc chuông hoặc tải file chất lượng cao về máy.",
+                screens_eyebrow: "TRẢI NGHIỆM GIAO DIỆN APP",
+                screens_title: "Giao Diện Sang Trọng, Trực Quan Chuẩn Studio",
+                screens_desc: "Mọi tính năng được chăm chút tỉ mỉ mang lại cảm hứng sáng tạo tối đa.",
+                screen1_cap: "Tạo Nhạc Tức Thì",
+                screen2_cap: "Viết Lời Thông Minh",
+                screen3_cap: "Ảnh Hóa Giai Điệu",
+                screen4_cap: "Player Hi-Fi Sóng Nhạc",
+                screen5_cap: "My Studio Cá Nhân",
+                screen6_cap: "Khám Phá Xu Hướng",
+                compare_eyebrow: "SO SÁNH KHÁC BIỆT",
+                compare_title: "Vì Sao MuseAI Được Đánh Giá Cao?",
+                compare_desc: "Sự vượt trội giữa MuseAI so với việc làm nhạc truyền thống và các công cụ AI khác.",
+                pricing_eyebrow: "BẢNG GIÁ MINH BẠCH",
+                pricing_title: "Lựa Chọn Gói Dịch Vụ Phù Hợp Với Bạn",
+                pricing_desc: "Bắt đầu hoàn toàn miễn phí hoặc nâng cấp để mở khóa toàn bộ sức mạnh sáng tạo.",
+                popular_badge: "PHỔ BIẾN NHẤT",
+                plan_free_name: "Gói Miễn Phí (Starter)",
+                plan_free_btn: "Bắt Đầu Miễn Phí",
+                plan_pro_name: "MuseAI Pro Unlimited",
+                plan_pro_btn: "Nâng Cấp Pro Ngay",
+                plan_token_name: "Gói Token Linh Hoạt",
+                plan_token_btn: "Mua Token",
+                faq_eyebrow: "GIẢI ĐÁP THẮC MẮC",
+                faq_title: "Những Câu Hỏi Thường Gặp Về MuseAI",
+                faq_desc: "Mọi điều bạn cần biết về bản quyền, chất lượng và cơ chế hoạt động của ứng dụng.",
+                faq1_q: "Tôi có sở hữu bản quyền bài hát tạo bởi MuseAI không?",
+                faq1_a: "Có. Tất cả các bài hát tạo ra bởi tài khoản của bạn (đặc biệt là người dùng Pro) đều thuộc quyền sở hữu của bạn. Bạn được phép phát hành lên Spotify, Apple Music, dùng làm nhạc nền video YouTube, TikTok hay phục vụ quảng cáo thương mại.",
+                faq2_q: "Chất lượng âm thanh xuất ra là bao nhiêu?",
+                faq2_a: "MuseAI sử dụng kiến trúc mô hình Lyria 2.4 tiên tiến, xuất ra âm thanh định dạng Lossless Flac / WAV 24-bit 48kHz hoặc MP3 320kbps chất lượng cao, đảm bảo độ trong trẻo và âm trường chuẩn phòng thu.",
+                faq3_q: "Tính năng Photo-to-Music (Ảnh Hóa Giai Điệu) hoạt động thế nào?",
+                faq3_a: "Khi bạn tải lên một bức ảnh, thuật toán thị giác máy tính sẽ phân tích bối cảnh, ánh sáng, nhiệt độ màu và cảm xúc chủ đạo (buồn, hào hứng, hoài niệm,...). Sau đó, AI ánh xạ các thuộc tính này thành cấu trúc hòa âm và nhạc cụ tương ứng.",
+                faq4_q: "Dữ liệu bài hát của tôi có được lưu trữ riêng tư không?",
+                faq4_a: "Có, MuseAI áp dụng kiến trúc Local-First. Tất cả các bản nhạc đã tạo đều được lưu trữ trực tiếp trên thiết bị của bạn (My Studio). Xem chi tiết tại trang Chính Sách Quyền Riêng Tư của chúng tôi.",
+                final_cta_title: "Sẵn Sàng Trở Thành Nhà Sản Xuất Âm Nhạc Cùng MuseAI?",
+                final_cta_desc: "Hơn 1.2 triệu bản nhạc đã được kiến tạo. Tải ứng dụng ngay hôm nay để nhận miễn phí các lượt tạo nhạc đầu tiên!"
+            }
+        };
+
+        let currentLang = "en";
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.getElementById("btnLangEn").classList.toggle("active", lang === "en");
+            document.getElementById("btnLangVi").classList.toggle("active", lang === "vi");
+            document.documentElement.lang = lang;
+
+            const dict = i18n[lang];
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                if (dict[key]) {
+                    el.innerHTML = dict[key];
+                }
+            });
+        }
+
+        // Header Scroll Shadow
+        window.addEventListener("scroll", () => {
+            const header = document.getElementById("siteHeader");
+            if (window.scrollY > 20) {
+                header.classList.add("scrolled");
+            } else {
+                header.classList.remove("scrolled");
+            }
+        });
+
+        // Mobile Menu Toggle
+        const mobileBtn = document.getElementById("mobileMenuBtn");
+        const mobileDrawer = document.getElementById("mobileDrawer");
+        mobileBtn.addEventListener("click", () => {
+            mobileDrawer.classList.toggle("open");
+        });
+        function closeDrawer() {
+            mobileDrawer.classList.remove("open");
+        }
+
+        // Switch Active Track
+        function switchTrack(trackKey, btnEl) {
+            if (activeAudio) {
+                activeAudio.pause();
+            }
+            isPlaying = false;
+            updatePlayButtonVisuals(false);
+
+            currentTrackKey = trackKey;
+            const data = tracks[trackKey];
+
+            // Update UI metadata
+            document.getElementById("consoleTrackTitle").textContent = data.title;
+            document.getElementById("consoleBpm").textContent = data.bpm;
+            document.getElementById("consoleKey").textContent = data.key;
+            document.getElementById("consolePromptText").textContent = data.prompt;
+
+            // Highlight Tab Button
+            document.querySelectorAll(".genre-pill").forEach(p => p.classList.remove("active"));
+            if (btnEl) btnEl.classList.add("active");
+
+            // Reset Progress
+            document.getElementById("consoleProgressFill").style.width = "0%";
+            document.getElementById("consoleCurrentTime").textContent = "0:00";
+
+            activeAudio = document.getElementById(data.audioId);
+            setupAudioEvents(activeAudio);
+            drawWaveform(false);
+        }
+
+        function playSpecificTrack(trackKey) {
+            const pills = document.querySelectorAll(".genre-pill");
+            let targetPill = null;
+            if (trackKey === 'lofi') targetPill = pills[0];
+            if (trackKey === 'acoustic') targetPill = pills[1];
+            if (trackKey === 'synthwave') targetPill = pills[2];
+
+            switchTrack(trackKey, targetPill);
+            document.getElementById("heroConsoleCard").scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => {
+                toggleActiveTrack();
+            }, 400);
+        }
+
+        function toggleActiveTrack() {
+            if (!activeAudio) {
+                activeAudio = document.getElementById(tracks[currentTrackKey].audioId);
+                setupAudioEvents(activeAudio);
+            }
+
+            if (isPlaying) {
+                activeAudio.pause();
+                isPlaying = false;
+                updatePlayButtonVisuals(false);
+            } else {
+                activeAudio.play().then(() => {
+                    isPlaying = true;
+                    updatePlayButtonVisuals(true);
+                    startWaveformAnimation();
+                }).catch(err => {
+                    console.log("Audio playback notice:", err);
+                    isPlaying = true;
+                    updatePlayButtonVisuals(true);
+                    startWaveformAnimation();
+                });
+            }
+        }
+
+        function toggleHeroSamplePlay() {
+            toggleActiveTrack();
+        }
+
+        function updatePlayButtonVisuals(playing) {
+            const playSvg = document.getElementById("playIconSvg");
+            const heroPlayBtnText = document.getElementById("heroPlayBtnText");
+            
+            if (playing) {
+                playSvg.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+                if (heroPlayBtnText) heroPlayBtnText.textContent = currentLang === 'vi' ? "Tạm Dừng Demo ❚❚" : "Pause Demo ❚❚";
+            } else {
+                playSvg.innerHTML = '<polygon points="6 4 20 12 6 20 6 4"></polygon>';
+                if (heroPlayBtnText) heroPlayBtnText.textContent = currentLang === 'vi' ? "Nghe Bản Demo Thử ♫" : "Play Demo Track ♫";
+            }
+        }
+
+        function setupAudioEvents(audio) {
+            if (!audio) return;
+            audio.ontimeupdate = () => {
+                if (!audio.duration) return;
+                const progress = (audio.currentTime / audio.duration) * 100;
+                document.getElementById("consoleProgressFill").style.width = progress + "%";
+                document.getElementById("consoleCurrentTime").textContent = formatTime(audio.currentTime);
+                document.getElementById("consoleTotalTime").textContent = formatTime(audio.duration);
+            };
+            audio.onended = () => {
+                isPlaying = false;
+                updatePlayButtonVisuals(false);
+                document.getElementById("consoleProgressFill").style.width = "0%";
+            };
+        }
+
+        function seekTrack(event) {
+            if (!activeAudio || !activeAudio.duration) return;
+            const bar = document.getElementById("consoleProgressBar");
+            const rect = bar.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const fraction = Math.max(0, Math.min(1, clickX / rect.width));
+            activeAudio.currentTime = fraction * activeAudio.duration;
+            document.getElementById("consoleProgressFill").style.width = (fraction * 100) + "%";
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // Canvas Waveform Animation
+        let wavePhase = 0;
+        function drawWaveform(animated = false) {
+            const width = canvas.width;
+            const height = canvas.height;
+            ctx.clearRect(0, 0, width, height);
+
+            const numBars = 52;
+            const barWidth = 4;
+            const gap = (width - (numBars * barWidth)) / (numBars - 1);
+            const currentColor = tracks[currentTrackKey].color;
+
+            for (let i = 0; i < numBars; i++) {
+                let barHeight;
+                if (animated && isPlaying) {
+                    const wave = Math.sin(i * 0.28 + wavePhase) * Math.cos(i * 0.12 - wavePhase);
+                    barHeight = Math.max(8, (Math.abs(wave) * (height - 12)) + (Math.random() * 14));
+                } else {
+                    const baseWave = Math.sin(i * 0.18) * 0.5 + 0.5;
+                    barHeight = Math.max(6, baseWave * (height * 0.65));
+                }
+
+                const x = i * (barWidth + gap);
+                const y = (height - barHeight) / 2;
+
+                const gradient = ctx.createLinearGradient(0, y, 0, y + barHeight);
+                gradient.addColorStop(0, currentColor);
+                gradient.addColorStop(1, "rgba(238, 109, 102, 0.4)");
+
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.roundRect(x, y, barWidth, barHeight, 2);
+                ctx.fill();
+            }
+        }
+
+        function startWaveformAnimation() {
+            if (!isPlaying) return;
+            wavePhase += 0.08;
+            drawWaveform(true);
+            animationFrameId = requestAnimationFrame(startWaveformAnimation);
+        }
+
+        // FAQ Toggle
+        function toggleFaq(btn) {
+            const item = btn.closest(".faq-item");
+            const wasActive = item.classList.contains("active");
+            document.querySelectorAll(".faq-item").forEach(el => el.classList.remove("active"));
+            if (!wasActive) {
+                item.classList.add("active");
+            }
+        }
+
+        // Initialize First Track (Default English)
+        window.addEventListener("DOMContentLoaded", () => {
+            setLanguage('en');
+            switchTrack("lofi", document.querySelectorAll(".genre-pill")[0]);
+            drawWaveform(false);
+        });
+    </script>
+</body>
+</html>
